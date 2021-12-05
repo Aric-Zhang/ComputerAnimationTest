@@ -1,4 +1,4 @@
-﻿#define USE_IMPORTOR
+﻿//define USE_IMPORTOR
 #define USE_NO_FBX
 
 using System.Collections;
@@ -11,7 +11,7 @@ using System.IO;
 
 namespace ZxtTool
 {
-#if(USE_IMPORTOR)
+#if (USE_IMPORTOR)
     public class CharacterFbxImporter : AssetPostprocessor
     {
         void OnpreprocessModel() {
@@ -189,7 +189,7 @@ namespace ZxtTool
             }
         }
     }
-#endif
+
         public static class SkeletonTool
     {
         public static GameObject FormSkeleton(GameObject g) {
@@ -236,5 +236,6 @@ namespace ZxtTool
             return null;
         }
     }
+#endif
 }
 

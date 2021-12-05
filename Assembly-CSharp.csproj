@@ -64,11 +64,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\BezierTools\BezierComponent.cs" />
+    <Compile Include="Assets\Constraint\Scripts\UnrealConstraint.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\RetargetingController.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\RetargetingProfile.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\ZXTSkeleton.cs" />
     <Compile Include="Assets\InputVisualize.cs" />
     <Compile Include="Assets\MyCCDIK.cs" />
+    <None Include="Assets\Constraint\Shaders\ConeUnlitBack.shader" />
+    <None Include="Assets\Constraint\Shaders\ConeUnlitFront.shader" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>E:/UnityProject/ComputerAnimationTest/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>

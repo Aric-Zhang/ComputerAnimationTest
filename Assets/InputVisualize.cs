@@ -4,22 +4,26 @@ using UnityEngine;
 
 public class InputVisualize : MonoBehaviour
 {
-    int frame = 0;
-    Vector3 lastPos = Vector3.zero;
-    public Transform inputObject;
+    public Transform rotationSource;
 
-    // Start is called before the first frame update
-    void Start()
+    public Vector3 worldSpaceForward = Vector3.forward;
+    public UnrealConstraint constraint;
+
+    private void Start()
     {
-        
+        ConfigurableJoint joint = constraint.Joint;
+        joint.targetRotation = Quaternion.LookRotation(worldSpaceForward);
+        joint.rotationDriveMode = RotationDriveMode.Slerp;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        Vector3 deltaPos = inputObject.position - lastPos;
-        Debug.DrawRay(Vector3.right * 0.02f * frame, Vector3.up*deltaPos.magnitude,Color.red,5f);
-        lastPos = inputObject.position;
-        frame++;
+        constraint.SetConnectedBodyWorldSpaceRotationTarget(rotationSource.rotation);
+    }
+
+    private void OnDrawGizmos()
+    {
+
+
     }
 }
