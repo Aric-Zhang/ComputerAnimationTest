@@ -15,7 +15,7 @@ public class UnrealConstraintEditor : Editor
     private static Material fanMaterial;
     private static Material fanBackMaterial;
 
-    bool editingConstraintRotation;
+    EditingConstraintMode editingConstraintMode;
 
     public static Mesh ConeMesh
     {
@@ -121,10 +121,7 @@ public class UnrealConstraintEditor : Editor
     {
         base.OnInspectorGUI();
         Color defaultBgColor = GUI.backgroundColor;
-        editingConstraintRotation = EditorGUILayout.Toggle("Edit Constraint Rotation",editingConstraintRotation, new GUIStyle("Button"));
-        if (editingConstraintRotation) { 
-            
-        }
+        editingConstraintMode = (EditingConstraintMode)EditorGUILayout.EnumPopup("Editing Constraint Space", editingConstraintMode);
         /*
         if (GUILayout.Button("Show Joint")) {
             ConfigurableJoint configurableJoint = (target as UnrealConstraint).Joint;
@@ -138,12 +135,18 @@ public class UnrealConstraintEditor : Editor
 
     private void OnSceneGUI()
     {
-        ConfigurableJoint configurableJoint = (target as UnrealConstraint).Joint;
-        DrawConstraint(target as UnrealConstraint, 0.5f, editingConstraintRotation);
+        //ConfigurableJoint configurableJoint = (target as UnrealConstraint).Joint;
+        SerializedProperty s_p_bakedConstraintData = serializedObject.FindProperty("bakedConstraintData");
+        ConfigurableJoint configurableJoint = s_p_bakedConstraintData.FindPropertyRelative("configurableJoint").objectReferenceValue as ConfigurableJoint;
+        if (!configurableJoint) {
+            s_p_bakedConstraintData.FindPropertyRelative("configurableJoint").objectReferenceValue = (target as UnrealConstraint).GetComponent<ConfigurableJoint>();
+        }
+        DrawConstraint(serializedObject.FindProperty("bakedConstraintData"), 0.5f, editingConstraintMode);
+        serializedObject.ApplyModifiedProperties();
     }
 
-    public static void DrawConstraint(UnrealConstraint unrealConstraint, float unifiedScale = 1,bool editingRotation = false) {
-        ConfigurableJoint configurableJoint = unrealConstraint.Joint;
+    public static void DrawConstraint(SerializedProperty s_p_bakedConstraintData, float unifiedScale = 1,EditingConstraintMode editingConstraintMode = EditingConstraintMode.none) {
+        ConfigurableJoint configurableJoint = s_p_bakedConstraintData.FindPropertyRelative("configurableJoint").objectReferenceValue as ConfigurableJoint;
 
         Transform parentTransform = configurableJoint.transform;
         Transform childTransform = null;
@@ -195,7 +198,7 @@ public class UnrealConstraintEditor : Editor
 
             if (Application.isPlaying)
             {
-                Quaternion initParentSpaceRotation = unrealConstraint.ParentAnchorRotation;
+                Quaternion initParentSpaceRotation = s_p_bakedConstraintData.FindPropertyRelative("initalLocalRotation").quaternionValue;
                 worldXAxis = parentTransform.rotation * initParentSpaceRotation * Vector3.right;
                 worldYAxis = parentTransform.rotation * initParentSpaceRotation * Vector3.up;
                 worldZAxis = parentTransform.rotation * initParentSpaceRotation * Vector3.forward;
@@ -288,9 +291,9 @@ public class UnrealConstraintEditor : Editor
             float angle_x_lower_limit = configurableJoint.lowAngularXLimit.limit;
             float angle_x_mid = (angle_x_upper_limit + angle_x_lower_limit) * 0.5f;
 
-            Vector3 upperVec = worldZAxis * Mathf.Cos(angle_x_upper_limit * Mathf.Deg2Rad) - worldYAxis * Mathf.Sin(angle_x_upper_limit * Mathf.Deg2Rad);
-            Vector3 lowerVec = worldZAxis * Mathf.Cos(angle_x_lower_limit * Mathf.Deg2Rad) - worldYAxis * Mathf.Sin(angle_x_lower_limit * Mathf.Deg2Rad);
-            Vector3 midVec = worldZAxis * Mathf.Cos(angle_x_mid * Mathf.Deg2Rad) - worldYAxis * Mathf.Sin(angle_x_mid * Mathf.Deg2Rad);
+            Vector3 upperVec = worldYAxis * Mathf.Cos(angle_x_upper_limit * Mathf.Deg2Rad) + worldZAxis * Mathf.Sin(angle_x_upper_limit * Mathf.Deg2Rad);
+            Vector3 lowerVec = worldYAxis * Mathf.Cos(angle_x_lower_limit * Mathf.Deg2Rad) + worldZAxis * Mathf.Sin(angle_x_lower_limit * Mathf.Deg2Rad);
+            Vector3 midVec = worldYAxis * Mathf.Cos(angle_x_mid * Mathf.Deg2Rad) + worldZAxis * Mathf.Sin(angle_x_mid * Mathf.Deg2Rad);
 
             fan_mesh.vertices = CalculateConeVertPositions(upperVec, lowerVec, midVec, midVec);
             cb.DrawMesh(fan_mesh, matrix, FanMaterial);
@@ -305,7 +308,7 @@ public class UnrealConstraintEditor : Editor
         }
         #endregion
 
-        SerializedObject serializedObject = new SerializedObject(unrealConstraint);
+        //SerializedObject serializedObject = new SerializedObject(unrealConstraint);
         
         Quaternion constraintWorldRotation = Quaternion.LookRotation(worldZAxis, worldYAxis);
 
@@ -315,22 +318,25 @@ public class UnrealConstraintEditor : Editor
         else{
 
             Quaternion constraintRotationInConnectedSpace;
+            //SerializedProperty s_p_bakedConstraintData = serializedObject.FindProperty("bakedConstraintData");
+
             if (childTransform)
             {
                 constraintRotationInConnectedSpace = Quaternion.Inverse(childTransform.rotation) * constraintWorldRotation;
-                serializedObject.FindProperty("initialRotationOffset").quaternionValue = constraintRotationInConnectedSpace;
+                s_p_bakedConstraintData.FindPropertyRelative("initialRotationOffset").quaternionValue = constraintRotationInConnectedSpace;
             }
             Quaternion constraintRotationInParentSpace = Quaternion.Inverse(parentTransform.rotation) * constraintWorldRotation;
-            serializedObject.FindProperty("initalLocalRotation").quaternionValue = constraintRotationInParentSpace;
-            serializedObject.ApplyModifiedProperties();
+            s_p_bakedConstraintData.FindPropertyRelative("initalLocalRotation").quaternionValue = constraintRotationInParentSpace;
+            //serializedObject.ApplyModifiedProperties();
         }
 
         if (childTransform) {
-            Vector3 childAnchorZAxis = (childTransform.rotation * unrealConstraint.ChildAnchorRotation) * Vector3.forward;
-            Vector3 childAnchorXAxis = (childTransform.rotation * unrealConstraint.ChildAnchorRotation) * Vector3.right;
+            Quaternion childAnchorRotation = s_p_bakedConstraintData.FindPropertyRelative("initialRotationOffset").quaternionValue;
+            Vector3 childAnchorYAxis = (childTransform.rotation * childAnchorRotation) * Vector3.up;
+            Vector3 childAnchorXAxis = (childTransform.rotation * childAnchorRotation) * Vector3.right;
             float lineWidth = 8 * unifiedScale;
 
-            Vector3 twistWorldDisplayDirection = Quaternion.FromToRotation(childAnchorXAxis, worldXAxis) * childAnchorZAxis;
+            Vector3 twistWorldDisplayDirection = Quaternion.FromToRotation(childAnchorXAxis, worldXAxis) * childAnchorYAxis;
 
             Handles.DrawAAPolyLine(lineWidth, new Vector3[] { connectedWorldPosition, connectedWorldPosition + twistWorldDisplayDirection * unifiedScale });
             Handles.color = Color.red;
@@ -339,24 +345,53 @@ public class UnrealConstraintEditor : Editor
             Handles.ConeHandleCap(0, connectedWorldPosition + worldXAxis * unifiedScale, Quaternion.LookRotation(worldXAxis), 0.05f * unifiedScale,EventType.Repaint);
         }
 
-        if (editingRotation && !Application.isPlaying) {
-            //Handles.FreeRotateHandle(0, constraintWorldRotation, constraintWorldPosition, 1);
-            Quaternion newWorldRotation = Handles.RotationHandle(constraintWorldRotation, constraintWorldPosition);
-            Quaternion newLocalRotation;
-            if (configurableJoint.configuredInWorldSpace)
+        if (!Application.isPlaying)
+        {
+            switch (editingConstraintMode)
             {
-                newLocalRotation = newWorldRotation;
-            }
-            else {
-                newLocalRotation = Quaternion.Inverse(parentTransform.rotation) * newWorldRotation;
-            }
-            Vector3 newAxis = newLocalRotation * Vector3.right;
-            Vector3 newSecondaryAxis = newLocalRotation * Vector3.up;
-            configurableJoint.axis = newAxis;
-            configurableJoint.secondaryAxis = newSecondaryAxis;
+                case EditingConstraintMode.position:
+                    Vector3 newWorldPosition = Handles.PositionHandle(constraintWorldPosition, constraintWorldRotation);
+                    Vector3 newLocalPosition = parentTransform.InverseTransformPoint(newWorldPosition);
+                    configurableJoint.anchor = newLocalPosition;
+                    if (configurableJoint.autoConfigureConnectedAnchor && childTransform) {
+                        Vector3 newChildSpacePosition = childTransform.InverseTransformPoint(newWorldPosition);
+                        configurableJoint.connectedAnchor = newChildSpacePosition;
+                    }
+                    //HandleUtility.Repaint();
+                    //SceneView.RepaintAll();
+                    break;
+                case EditingConstraintMode.rotation:
+                    Quaternion newWorldRotation = Handles.RotationHandle(constraintWorldRotation, constraintWorldPosition);
+                    Quaternion newLocalRotation;
+                    if (configurableJoint.configuredInWorldSpace)
+                    {
+                        newLocalRotation = newWorldRotation;
+                    }
+                    else
+                    {
+                        newLocalRotation = Quaternion.Inverse(parentTransform.rotation) * newWorldRotation;
+                    }
+                    Vector3 newAxis = newLocalRotation * Vector3.right;
+                    Vector3 newSecondaryAxis = newLocalRotation * Vector3.up;
+                    configurableJoint.axis = newAxis;
+                    configurableJoint.secondaryAxis = newSecondaryAxis;
 
-            HandleUtility.Repaint();
-            SceneView.RepaintAll();
+                    //HandleUtility.Repaint();
+                    //SceneView.RepaintAll();
+                    break;
+                case EditingConstraintMode.connectedPosition:
+                    Vector3 newConnectedAnchorWorldPosition = Handles.PositionHandle(connectedWorldPosition, constraintWorldRotation);
+                    Vector3 newConnectedAnchorLocalPosition = childTransform.InverseTransformPoint(newConnectedAnchorWorldPosition);
+                    configurableJoint.connectedAnchor = newConnectedAnchorLocalPosition;
+                    if (configurableJoint.autoConfigureConnectedAnchor && childTransform)
+                    {
+                        Vector3 newParentSpacePosition = parentTransform.InverseTransformPoint(newConnectedAnchorWorldPosition);
+                        configurableJoint.anchor = newParentSpacePosition;
+                    }
+                    //HandleUtility.Repaint();
+                    //SceneView.RepaintAll();
+                    break;
+            }
         }
     }
 
@@ -381,4 +416,11 @@ public class UnrealConstraintEditor : Editor
         }
         return verts;
     }
+}
+
+public enum EditingConstraintMode { 
+    none,
+    position,
+    rotation,
+    connectedPosition
 }

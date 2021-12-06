@@ -155,9 +155,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e14e78f9edf2f604491e85210960274e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  configurableJoint: {fileID: 237475699}
-  initialRotationOffset: {x: 0.61644155, y: 0.48846906, z: 0.26016945, w: -0.56009805}
-  initalLocalRotation: {x: 0.43574047, y: 0.7076004, z: -0.4354855, w: -0.34609872}
+  bakedConstraintData:
+    configurableJoint: {fileID: 237475699}
+    initialRotationOffset: {x: -0.51521534, y: -0.34997153, z: -0.5438583, w: 0.56239784}
+    initalLocalRotation: {x: -0.48742187, y: -0.67588705, z: 0.16480488, w: 0.5276703}
 --- !u!153 &237475699
 ConfigurableJoint:
   m_ObjectHideFlags: 0
@@ -166,15 +167,15 @@ ConfigurableJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 237475697}
   m_ConnectedBody: {fileID: 2064662998}
-  m_Anchor: {x: 0, y: 2.32, z: 0}
-  m_Axis: {x: -0.38069192, y: 0.91810226, z: 0.110281885}
+  m_Anchor: {x: -0.2866181, y: 2.7069411, z: 0.003149867}
+  m_Axis: {x: 0.03203213, y: 0.83280957, z: 0.55263203}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 3.0289783, y: 1.2151461, z: -1.8227859}
+  m_ConnectedAnchor: {x: 3.1804433, y: 1.4787917, z: -1.449379}
   serializedVersion: 2
-  m_SecondaryAxis: {x: 0.31521833, y: 0.24096522, z: -0.91791785}
+  m_SecondaryAxis: {x: 0.484959, y: 0.47051856, z: -0.7371751}
   m_XMotion: 0
   m_YMotion: 1
-  m_ZMotion: 1
+  m_ZMotion: 0
   m_AngularXMotion: 1
   m_AngularYMotion: 1
   m_AngularZMotion: 1
@@ -189,7 +190,7 @@ ConfigurableJoint:
     spring: 0
     damper: 0
   m_LowAngularXLimit:
-    limit: -0.91
+    limit: -36.7
     bounciness: 0
     contactDistance: 0
   m_HighAngularXLimit:
@@ -200,7 +201,7 @@ ConfigurableJoint:
     spring: 0
     damper: 0
   m_AngularYLimit:
-    limit: 23.019703
+    limit: 37.84
     bounciness: 0
     contactDistance: 0
   m_AngularZLimit:
@@ -627,7 +628,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1346163952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -650,13 +651,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1346163951}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: 0.05193212, z: -0, w: 0.9986506}
   m_LocalPosition: {x: -0.8571472, y: 0.8486004, z: 1.6524953}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 5.9540005, z: 0}
 --- !u!1 &1405275601
 GameObject:
   m_ObjectHideFlags: 0
@@ -801,9 +802,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e14e78f9edf2f604491e85210960274e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  configurableJoint: {fileID: 1502774547}
-  initialRotationOffset: {x: 0.7980157, y: -0.022643853, z: 0.50833803, w: -0.32287875}
-  initalLocalRotation: {x: 0.8712511, y: 0.3560602, z: -0.315934, w: -0.11970081}
+  bakedConstraintData:
+    configurableJoint: {fileID: 1502774547}
+    initialRotationOffset: {x: 0.050193656, y: 0.2556511, z: 0.32735622, w: 0.90827364}
+    initalLocalRotation: {x: -0.23933248, y: 0.71667254, z: 0.6278723, w: 0.18675336}
 --- !u!153 &1502774547
 ConfigurableJoint:
   m_ObjectHideFlags: 0
@@ -812,18 +814,18 @@ ConfigurableJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1502774545}
   m_ConnectedBody: {fileID: 1405275602}
-  m_Anchor: {x: 0, y: 2.32, z: 0}
-  m_Axis: {x: 0.54681367, y: 0.69607085, z: -0.4652743}
+  m_Anchor: {x: -0.6098193, y: 2.8994207, z: 0.7194812}
+  m_Axis: {x: -0.8156864, y: -0.108531505, z: -0.56822264}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 1.799616, y: 1.8935193, z: -1.4072006}
+  m_ConnectedAnchor: {x: 2.0842128, y: 2.2062032, z: -0.78032124}
   serializedVersion: 2
-  m_SecondaryAxis: {x: 0.5448006, y: -0.7177856, z: -0.43356204}
+  m_SecondaryAxis: {x: -0.57756066, y: 0.09699271, z: 0.8105654}
   m_XMotion: 0
-  m_YMotion: 0
+  m_YMotion: 1
   m_ZMotion: 0
-  m_AngularXMotion: 2
-  m_AngularYMotion: 2
-  m_AngularZMotion: 2
+  m_AngularXMotion: 1
+  m_AngularYMotion: 1
+  m_AngularZMotion: 1
   m_LinearLimitSpring:
     spring: 0
     damper: 0
@@ -835,22 +837,22 @@ ConfigurableJoint:
     spring: 0
     damper: 0
   m_LowAngularXLimit:
-    limit: -0.91
+    limit: -30.61
     bounciness: 0
     contactDistance: 0
   m_HighAngularXLimit:
-    limit: 26.74905
+    limit: 45
     bounciness: 0
     contactDistance: 0
   m_AngularYZLimitSpring:
     spring: 0
     damper: 0
   m_AngularYLimit:
-    limit: 23.019703
+    limit: 45
     bounciness: 0
     contactDistance: 0
   m_AngularZLimit:
-    limit: 78.44679
+    limit: 45
     bounciness: 0
     contactDistance: 0
   m_TargetPosition: {x: 0, y: 0, z: 0}
@@ -875,19 +877,19 @@ ConfigurableJoint:
   m_RotationDriveMode: 0
   m_AngularXDrive:
     serializedVersion: 3
-    positionSpring: 0
-    positionDamper: 0
+    positionSpring: 100000
+    positionDamper: 5
     maximumForce: 3.4028233e+38
   m_AngularYZDrive:
     serializedVersion: 3
-    positionSpring: 0
-    positionDamper: 0
+    positionSpring: 100000
+    positionDamper: 5
     maximumForce: 3.4028233e+38
   m_SlerpDrive:
     serializedVersion: 3
     positionSpring: 100000
-    positionDamper: 0
-    maximumForce: 100000
+    positionDamper: 5
+    maximumForce: 3.4028233e+38
   m_ProjectionMode: 0
   m_ProjectionDistance: 0.1
   m_ProjectionAngle: 180
@@ -982,13 +984,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1502774545}
-  m_LocalRotation: {x: 0.35284165, y: -0.479725, z: -0.15320855, w: 0.7886024}
+  m_LocalRotation: {x: 0.26617295, y: -0.45278347, z: -0.30174825, w: 0.7956677}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 24.174002, y: -71.417, z: -39.49}
+  m_LocalEulerAnglesHint: {x: 8.645, y: -63.036003, z: -46.845}
 --- !u!1 &2064662997
 GameObject:
   m_ObjectHideFlags: 0

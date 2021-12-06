@@ -6,9 +6,52 @@ using UnityEngine;
 public class UnrealConstraint : MonoBehaviour
 {
     [SerializeField]
-    ConfigurableJoint configurableJoint;
+    BakedConstraintData bakedConstraintData;
 
-    [HideInInspector]
+    /// <summary>
+    /// 在child空间下的constraintRotation
+    /// </summary>
+    public Quaternion ChildAnchorRotation {
+        get => bakedConstraintData.ChildAnchorRotation;
+    }
+
+    /// <summary>
+    /// 在parent空间下的constraintRotation
+    /// </summary>
+    public Quaternion ParentAnchorRotation {
+        get => bakedConstraintData.ParentAnchorRotation;
+    }
+
+    public ConfigurableJoint Joint
+    {
+        get {
+            if (!bakedConstraintData.configurableJoint) {
+                bakedConstraintData.configurableJoint = GetComponent<ConfigurableJoint>();
+            }
+            return bakedConstraintData.configurableJoint;
+        }
+    }
+
+    private void Reset()
+    {
+        ConfigurableJoint configurableJoint = GetComponent<ConfigurableJoint>();
+        if (bakedConstraintData == null) {
+            bakedConstraintData = new BakedConstraintData();
+        }
+        if (configurableJoint)
+        {
+            bakedConstraintData.configurableJoint = configurableJoint;
+        }
+    }
+
+    public void SetConnectedBodyWorldSpaceRotationTarget(Quaternion worldRotation) {
+        bakedConstraintData.SetConnectedBodyWorldSpaceRotationTarget(worldRotation);
+    }
+}
+
+[System.Serializable]
+public class BakedConstraintData {
+    public ConfigurableJoint configurableJoint;
     [SerializeField]
     Quaternion initialRotationOffset = Quaternion.identity;
     [SerializeField]
@@ -17,36 +60,25 @@ public class UnrealConstraint : MonoBehaviour
     /// <summary>
     /// 在child空间下的constraintRotation
     /// </summary>
-    public Quaternion ChildAnchorRotation {
+    public Quaternion ChildAnchorRotation
+    {
         get => initialRotationOffset;
     }
 
     /// <summary>
     /// 在parent空间下的constraintRotation
     /// </summary>
-    public Quaternion ParentAnchorRotation {
+    public Quaternion ParentAnchorRotation
+    {
         get => initalLocalRotation;
     }
 
-    public ConfigurableJoint Joint
+    public void SetConnectedBodyWorldSpaceRotationTarget(Quaternion worldRotation)
     {
-        get { 
-            if(!configurableJoint) configurableJoint = GetComponent<ConfigurableJoint>();
-            return configurableJoint;
-        }
-    }
-
-    private void Reset()
-    {
-        configurableJoint = GetComponent<ConfigurableJoint>();
-    }
-
-    public void SetConnectedBodyWorldSpaceRotationTarget(Quaternion worldRotation) {
-        ConfigurableJoint joint = Joint;
-        Quaternion constraintWorldRotation = transform.rotation * ParentAnchorRotation;
+        ConfigurableJoint joint = configurableJoint;
+        Quaternion constraintWorldRotation = configurableJoint.transform.rotation * ParentAnchorRotation;
         Quaternion constraintSpaceSourceRotation = Quaternion.Inverse(constraintWorldRotation) * worldRotation;
         Quaternion rotationTarget = constraintSpaceSourceRotation * ChildAnchorRotation;
         joint.targetRotation = rotationTarget;
     }
-
 }
