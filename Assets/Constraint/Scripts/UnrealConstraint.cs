@@ -47,6 +47,10 @@ public class UnrealConstraint : MonoBehaviour
     public void SetConnectedBodyWorldSpaceRotationTarget(Quaternion worldRotation) {
         bakedConstraintData.SetConnectedBodyWorldSpaceRotationTarget(worldRotation);
     }
+
+    public void SetConnectedBodyWorldSpaceRotation(Quaternion worldRotation , float maxTranslationSpeed = float.MaxValue) {
+        bakedConstraintData.SetConnectedBodyWorldSpaceRotation(worldRotation, maxTranslationSpeed);
+    }
 }
 
 [System.Serializable]
@@ -73,6 +77,7 @@ public class BakedConstraintData {
         get => initalLocalRotation;
     }
 
+    //to-do:用rigidbody的velocity写一套motor控制，作为motor的另外一环
     public void SetConnectedBodyWorldSpaceRotationTarget(Quaternion worldRotation)
     {
         ConfigurableJoint joint = configurableJoint;
@@ -81,4 +86,65 @@ public class BakedConstraintData {
         Quaternion rotationTarget = constraintSpaceSourceRotation * ChildAnchorRotation;
         joint.targetRotation = rotationTarget;
     }
+
+    //Rotation Only KeyFramed Controller
+    public void SetConnectedBodyWorldSpaceRotation(Quaternion worldRotation, float maxTranslationSpeed = float.MaxValue) {
+        Rigidbody connectedBody = configurableJoint.connectedBody;
+
+        Vector3 connectedAnchorWorldPos = connectedBody.transform.TransformPoint(configurableJoint.connectedAnchor);
+        Vector3 connectedAnchorWorldOffset = connectedAnchorWorldPos - connectedBody.position;
+
+        /*clamp connected pos
+        bool xLocked = configurableJoint.xMotion == ConfigurableJointMotion.Locked;
+        bool yLocked = configurableJoint.yMotion == ConfigurableJointMotion.Locked;
+        bool zLocked = configurableJoint.zMotion == ConfigurableJointMotion.Locked;*/
+
+        if (true) {
+            Vector3 anchorWorldPos = configurableJoint.transform.TransformPoint(configurableJoint.anchor);
+            connectedAnchorWorldPos = anchorWorldPos;
+        }
+
+        Quaternion currentConnectedRotation = connectedBody.rotation;
+        Quaternion deltaRotation = worldRotation * Quaternion.Inverse(currentConnectedRotation);
+        Vector3 newConnectedAnchorOffset = deltaRotation * connectedAnchorWorldOffset;
+        Vector3 newConnectedBodyPosition = connectedAnchorWorldPos - newConnectedAnchorOffset;
+        //Debug.DrawLine(newConnectedBodyPosition, connectedAnchorWorldPos);
+
+        Vector3 deltaPosition = newConnectedBodyPosition - connectedBody.position;
+        float maxTransitionNextFixedFrame = maxTranslationSpeed * Time.fixedDeltaTime;
+
+        if (maxTransitionNextFixedFrame * maxTransitionNextFixedFrame > deltaPosition.sqrMagnitude)
+        {
+            connectedBody.position = newConnectedBodyPosition;
+            connectedBody.rotation = worldRotation;
+        }
+        else {
+            float ratio = maxTransitionNextFixedFrame / deltaPosition.magnitude;
+            connectedBody.position = connectedBody.position + deltaPosition * ratio;
+            Vector3 axis;
+            float angle;
+            deltaRotation.ToAngleAxis(out angle, out axis);
+            Debug.DrawRay(connectedBody.position, axis * 10);
+            connectedBody.rotation = Quaternion.Lerp(Quaternion.identity, deltaRotation, ratio) * connectedBody.rotation;
+        }
+        //connectedBody.velocity = 2 * deltaPosition / Time.fixedDeltaTime;
+
+        connectedBody.velocity = Vector3.zero;
+        //抵消重力()
+        if (connectedBody.useGravity)
+        {
+            connectedBody.AddForce(-Physics.gravity, ForceMode.Acceleration);
+        }
+    }
+
+    //to-do:加上最大插值限制
+    public void SetConnectedBodyPositionAndRotationDirectly(Vector3 worldPosition, Quaternion worldRotation) {
+        configurableJoint.connectedBody.position = worldPosition;
+        configurableJoint.connectedBody.rotation = worldRotation;
+        if (configurableJoint.connectedBody.useGravity)
+        {
+            configurableJoint.connectedBody.AddForce(-Physics.gravity, ForceMode.Acceleration);
+        }
+    }
+    
 }
