@@ -7,8 +7,7 @@ public class InputVisualize : MonoBehaviour
     public Transform rotationSource;
     //public Rigidbody constraintedChild;
 
-    public Vector3 worldSpaceForward = Vector3.forward;
-    public UnrealConstraint constraint;
+    public UnrealConstraint[] constraints;
 
     private void Start()
     {
@@ -25,8 +24,13 @@ public class InputVisualize : MonoBehaviour
 
     private void FixedUpdate()
     {
-        constraint.SetConnectedBodyWorldSpaceRotationTarget(rotationSource.rotation);
-        //constraint.SetConnectedBodyWorldSpaceRotation(rotationSource.rotation ,20f);
+        //
+        //constraint.SetConnectedBodyPositionAndRotationDirectly(rotationSource.position, rotationSource.rotation,20);
+        foreach (UnrealConstraint constraint in constraints)
+        {
+            //constraint.SetConnectedBodyWorldSpaceRotation(rotationSource.rotation, 20);
+            constraint.SetConnectedBodyWorldSpaceRotationTarget(rotationSource.rotation);
+        }
         //constraintedChild.rotation = rotationSource.rotation;
         //constraintedChild.position = rotationSource.position;
     }

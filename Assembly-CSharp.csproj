@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\BezierTools\BezierComponent.cs" />
+    <Compile Include="Assets\Constraint\Scripts\PhysicalAnimation.cs" />
     <Compile Include="Assets\Constraint\Scripts\UnrealConstraint.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\RetargetingController.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\RetargetingProfile.cs" />

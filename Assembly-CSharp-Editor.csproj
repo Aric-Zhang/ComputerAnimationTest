@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\BezierTools\Editor\BezierComponentEditor.cs" />
+    <Compile Include="Assets\Constraint\Scripts\Editor\PhysicalAnimationEditor.cs" />
     <Compile Include="Assets\Constraint\Scripts\Editor\UnrealConstraintEditor.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\Editor\RetargetingControllerEditor.cs" />
     <Compile Include="Assets\FootAdjust\Scripts\Editor\ZXTSkeletonEditor.cs" />

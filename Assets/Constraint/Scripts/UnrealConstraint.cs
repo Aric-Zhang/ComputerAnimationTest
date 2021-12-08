@@ -51,6 +51,10 @@ public class UnrealConstraint : MonoBehaviour
     public void SetConnectedBodyWorldSpaceRotation(Quaternion worldRotation , float maxTranslationSpeed = float.MaxValue) {
         bakedConstraintData.SetConnectedBodyWorldSpaceRotation(worldRotation, maxTranslationSpeed);
     }
+
+    public void SetConnectedBodyPositionAndRotationDirectly(Vector3 worldPosition, Quaternion worldRotation, float maxTranslationSpeed = float.MaxValue) {
+        bakedConstraintData.SetConnectedBodyPositionAndRotationDirectly(worldPosition, worldRotation, maxTranslationSpeed);
+    }
 }
 
 [System.Serializable]
@@ -113,9 +117,10 @@ public class BakedConstraintData {
         Vector3 deltaPosition = newConnectedBodyPosition - connectedBody.position;
         float maxTransitionNextFixedFrame = maxTranslationSpeed * Time.fixedDeltaTime;
 
-        if (maxTransitionNextFixedFrame * maxTransitionNextFixedFrame > deltaPosition.sqrMagnitude)
+        if (maxTransitionNextFixedFrame > deltaPosition.magnitude)
         {
             connectedBody.position = newConnectedBodyPosition;
+            //connectedBody.transform.rotation = worldRotation;
             connectedBody.rotation = worldRotation;
         }
         else {
@@ -138,9 +143,25 @@ public class BakedConstraintData {
     }
 
     //to-do:加上最大插值限制
-    public void SetConnectedBodyPositionAndRotationDirectly(Vector3 worldPosition, Quaternion worldRotation) {
-        configurableJoint.connectedBody.position = worldPosition;
-        configurableJoint.connectedBody.rotation = worldRotation;
+    public void SetConnectedBodyPositionAndRotationDirectly(Vector3 worldPosition, Quaternion worldRotation, float maxTranslationSpeed = float.MaxValue) {
+        Rigidbody connectedBody = configurableJoint.connectedBody;
+        Vector3 deltaPosition = worldPosition - connectedBody.position;
+        Quaternion deltaRotation = worldRotation * Quaternion.Inverse(connectedBody.rotation);
+        float maxTransitionNextFixedFrame = maxTranslationSpeed * Time.fixedDeltaTime;
+        if (maxTransitionNextFixedFrame > deltaPosition.magnitude)
+        {
+            configurableJoint.connectedBody.position = worldPosition;
+            configurableJoint.connectedBody.rotation = worldRotation;
+        }
+        else
+        {
+            float ratio = maxTransitionNextFixedFrame / deltaPosition.magnitude;
+            connectedBody.position = connectedBody.position + deltaPosition * ratio;
+            connectedBody.rotation = Quaternion.Lerp(Quaternion.identity, deltaRotation, ratio) * connectedBody.rotation;
+        }
+        
+        connectedBody.angularVelocity = Vector3.zero;
+        connectedBody.velocity = Vector3.zero;
         if (configurableJoint.connectedBody.useGravity)
         {
             configurableJoint.connectedBody.AddForce(-Physics.gravity, ForceMode.Acceleration);
