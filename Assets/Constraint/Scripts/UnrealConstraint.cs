@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(ConfigurableJoint))]
 public class UnrealConstraint : MonoBehaviour
 {
+    public string constraintName;
     [SerializeField]
     BakedConstraintData bakedConstraintData;
 

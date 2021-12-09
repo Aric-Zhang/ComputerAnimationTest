@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PhysicalAnimation : MonoBehaviour
 {
+    [HideInInspector]
     [SerializeField]
     UnrealConstraint[] constraints;
 
