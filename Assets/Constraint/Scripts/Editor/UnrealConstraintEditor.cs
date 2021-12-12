@@ -17,6 +17,9 @@ public class UnrealConstraintEditor : Editor
 
     EditingConstraintMode editingConstraintMode;
 
+    /// <summary>
+    /// 锥体Mesh
+    /// </summary>
     public static Mesh ConeMesh
     {
         get {
@@ -46,6 +49,9 @@ public class UnrealConstraintEditor : Editor
         }
     }
 
+    /// <summary>
+    /// 红色半透明材质正面
+    /// </summary>
     public static Material ConeMaterial
     {
         get
@@ -65,6 +71,9 @@ public class UnrealConstraintEditor : Editor
         }
     }
 
+    /// <summary>
+    /// 红色半透明材质背面
+    /// </summary>
     public static Material ConeBackMaterial
     {
         get
@@ -83,6 +92,10 @@ public class UnrealConstraintEditor : Editor
         }
     }
 
+    /// <summary>
+    /// 绿色半透明材质正面
+    /// </summary>
+
     public static Material FanMaterial
     {
         get {
@@ -99,6 +112,9 @@ public class UnrealConstraintEditor : Editor
         }
     }
 
+    /// <summary>
+    /// 绿色半透明材质背面
+    /// </summary>
     public static Material FanBackMaterial
     {
         get
@@ -122,15 +138,6 @@ public class UnrealConstraintEditor : Editor
         base.OnInspectorGUI();
         Color defaultBgColor = GUI.backgroundColor;
         editingConstraintMode = (EditingConstraintMode)EditorGUILayout.EnumPopup("Editing Constraint Space", editingConstraintMode);
-        /*
-        if (GUILayout.Button("Show Joint")) {
-            ConfigurableJoint configurableJoint = (target as UnrealConstraint).Joint;
-            SerializedObject so = new SerializedObject(configurableJoint);
-            SerializedProperty s_property =  so.GetIterator();
-            while (s_property.Next(true)) {
-                Debug.Log( s_property.name);
-            }
-        }*/
     }
 
     private void OnSceneGUI()
@@ -145,7 +152,14 @@ public class UnrealConstraintEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 
+    /// <summary>
+    /// 绘制UE4风格的Constraint
+    /// </summary>
+    /// <param name="s_p_bakedConstraintData">被烘焙信息，包括“约束空间”在父物体下的旋转和“被约束空间”在子物体下的旋转</param>
+    /// <param name="unifiedScale">显示大小</param>
+    /// <param name="editingConstraintMode">编辑模式</param>
     public static void DrawConstraint(SerializedProperty s_p_bakedConstraintData, float unifiedScale = 1,EditingConstraintMode editingConstraintMode = EditingConstraintMode.none) {
+        
         ConfigurableJoint configurableJoint = s_p_bakedConstraintData.FindPropertyRelative("configurableJoint").objectReferenceValue as ConfigurableJoint;
 
         Transform parentTransform = configurableJoint.transform;
@@ -173,7 +187,7 @@ public class UnrealConstraintEditor : Editor
 
         Handles.color = Color.red;
         Handles.DrawLine(constraintWorldPosition, parentTransform.position);
-
+        //计算真正有效的轴向
         Vector3 axis = configurableJoint.axis;
         if (axis.sqrMagnitude < 0.001) axis = Vector3.right;
 
@@ -188,7 +202,7 @@ public class UnrealConstraintEditor : Editor
         Vector3 localXAxis = axis.normalized;
         Vector3 localYAxis = secondaryAxis.normalized;
         Vector3 localZAxis = Vector3.Cross(localXAxis, localYAxis).normalized;
-
+        //计算约束空间在世界空间下的轴向
         Vector3 worldXAxis;
         Vector3 worldYAxis;
         Vector3 worldZAxis;
@@ -217,7 +231,7 @@ public class UnrealConstraintEditor : Editor
         }
 
         float motionLimit = configurableJoint.linearLimit.limit;
-
+        //渲染线性约束
         Handles.color = Color.green;
         if (configurableJoint.xMotion == ConfigurableJointMotion.Limited)
         {
@@ -232,6 +246,9 @@ public class UnrealConstraintEditor : Editor
             Handles.DrawLine(constraintWorldPosition + worldZAxis * motionLimit, constraintWorldPosition - worldZAxis * motionLimit);
         }
 
+        //如果使用适应屏幕的Handles大小，则传入的unifiedScale被覆盖
+        unifiedScale = HandleUtility.GetHandleSize(constraintWorldPosition) * unifiedScale;
+        //渲染swing范围锥形（塔可饼）
         #region render yz cone
         Vector3 angularHandlePosition = childTransform ? connectedWorldPosition : constraintWorldPosition;
         CommandBuffer cb = new CommandBuffer();
@@ -309,13 +326,13 @@ public class UnrealConstraintEditor : Editor
         #endregion
 
         //SerializedObject serializedObject = new SerializedObject(unrealConstraint);
-        
+        //约束空间在世界空间下的旋转
         Quaternion constraintWorldRotation = Quaternion.LookRotation(worldZAxis, worldYAxis);
 
         if (Application.isPlaying) {
-            
+            //
         }
-        else{
+        else{  //更新被烘焙的旋转
 
             Quaternion constraintRotationInConnectedSpace;
             //SerializedProperty s_p_bakedConstraintData = serializedObject.FindProperty("bakedConstraintData");
@@ -330,7 +347,7 @@ public class UnrealConstraintEditor : Editor
             //serializedObject.ApplyModifiedProperties();
         }
 
-        if (childTransform) {
+        if (childTransform) {  //渲染“被约束空间”的轴向
             Quaternion childAnchorRotation = s_p_bakedConstraintData.FindPropertyRelative("initialRotationOffset").quaternionValue;
             Vector3 childAnchorYAxis = (childTransform.rotation * childAnchorRotation) * Vector3.up;
             Vector3 childAnchorXAxis = (childTransform.rotation * childAnchorRotation) * Vector3.right;
@@ -345,6 +362,7 @@ public class UnrealConstraintEditor : Editor
             Handles.ConeHandleCap(0, connectedWorldPosition + worldXAxis * unifiedScale, Quaternion.LookRotation(worldXAxis), 0.05f * unifiedScale,EventType.Repaint);
         }
 
+        //交互式编辑anchor和axis
         if (!Application.isPlaying)
         {
             switch (editingConstraintMode)

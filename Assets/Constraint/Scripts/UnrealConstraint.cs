@@ -33,6 +33,10 @@ public class UnrealConstraint : MonoBehaviour
         }
     }
 
+    public void InitConstraintData() {
+        if (bakedConstraintData == null) bakedConstraintData = new BakedConstraintData();
+    }
+
     private void Reset()
     {
         ConfigurableJoint configurableJoint = GetComponent<ConfigurableJoint>();
