@@ -386,15 +386,18 @@ public class PhysicalAnimationEditor : Editor
     void GenerateColliders() {
         if (boneData.Length == 0) return;
         Transform rootBone = (target as PhysicalAnimation).transform;
+        //获取所有的SkinnedMeshRenderer
         SkinnedMeshRenderer[] smrs = rootBone.GetComponentsInChildren<SkinnedMeshRenderer>();
-
+        //用来存储bone和它对应的顶点在骨骼空间的位置
         Dictionary<Transform, List<Vector3>> bone_vertex_pos_dict = new Dictionary<Transform, List<Vector3>>();
 
         foreach (SkinnedMeshRenderer smr in smrs)
         {
             Dictionary<Transform, List<int>> bone_vertex_dict = new Dictionary<Transform, List<int>>();
             Transform[] bones = smr.bones;
+            //sharedMesh用来获取蒙皮权重信息
             Mesh sharedMesh = smr.sharedMesh;
+            //bakedMesh用莱获取顶点位置
             Mesh bakedMesh = new Mesh();
             smr.BakeMesh(bakedMesh);
             BoneWeight[] boneWeights = sharedMesh.boneWeights;
@@ -417,14 +420,15 @@ public class PhysicalAnimationEditor : Editor
                     }
                 }
             }
+            //模型空间转世界空间的矩阵
             Matrix4x4 modelTransformationMatrix = smr.transform.localToWorldMatrix;
             Vector3[] vertWorldPos = new Vector3[bakedMesh.vertexCount];
             Vector3[] vertModelPos = bakedMesh.vertices;
             for (int i = 0; i < bakedMesh.vertexCount; i++)
             {
                 Vector4 vert4 = vertModelPos[i];
-                vert4.w = 1;
-                vertWorldPos[i] = modelTransformationMatrix * vert4;
+                vert4.w = 1;  //齐次矩阵乘法带上位移的必要步骤
+                vertWorldPos[i] = modelTransformationMatrix * vert4;  //自动取前三位
             }
             foreach (KeyValuePair<Transform, List<int>> kvp in bone_vertex_dict)
             {
@@ -435,7 +439,7 @@ public class PhysicalAnimationEditor : Editor
                 }
                 foreach (int bone_index in kvp.Value)
                 {
-                    bone_vertex_pos_dict[bone].Add(bone.InverseTransformPoint(vertWorldPos[bone_index]));
+                    bone_vertex_pos_dict[bone].Add(bone.InverseTransformPoint(vertWorldPos[bone_index])); //世界空间转骨骼空间
                 }
             }
         }
@@ -451,9 +455,10 @@ public class PhysicalAnimationEditor : Editor
                     //
                 }
                 else {
-                    Vector3 max = boneSpaceVertsList[0];
+                    Vector3 max = boneSpaceVertsList[0];  
                     Vector3 min = boneSpaceVertsList[0];
-                    foreach (Vector3 boneSapceVert in boneSpaceVertsList) {
+                    foreach (Vector3 boneSapceVert in boneSpaceVertsList)
+                    {  //计算包围盒大小
                         max.x = Mathf.Max(max.x, boneSapceVert.x);
                         max.y = Mathf.Max(max.y, boneSapceVert.y);
                         max.z = Mathf.Max(max.z, boneSapceVert.z);
@@ -463,29 +468,30 @@ public class PhysicalAnimationEditor : Editor
                     }
                     CapsuleCollider capsuleCollider = bone.gameObject.AddComponent<CapsuleCollider>();
                     Vector3 size = max - min;
-                    if (size.x >= size.y && size.x >= size.z)
+                    if (size.x >= size.y && size.x >= size.z)  //最长的边为胶囊体的方向
                     {
                         capsuleCollider.direction = 0;
-                        Vector3 center = new Vector3((max.x + min.x) * 0.5f, 0, 0);
-                        capsuleCollider.center = center;
+                        //Vector3 center = new Vector3((max.x + min.x) * 0.5f, 0, 0);
+                        //capsuleCollider.center = center;
                         capsuleCollider.height = max.x - min.x;
-                        capsuleCollider.radius = (size.y + size.z) * 0.25f;
+                        capsuleCollider.radius = (size.y + size.z) * 0.25f;  //剩下两个边平均一下是直径，再取一半为半径
                     }
                     else if (size.y >= size.z && size.y >= size.x)
                     {
                         capsuleCollider.direction = 1;
-                        Vector3 center = new Vector3(0, (max.y + min.y) * 0.5f, 0);
-                        capsuleCollider.center = center;
+                        //Vector3 center = new Vector3(0, (max.y + min.y) * 0.5f, 0);
+                        //capsuleCollider.center = center;
                         capsuleCollider.height = max.y - min.y;
                         capsuleCollider.radius = (size.x + size.z) * 0.25f;
                     }
                     else {
                         capsuleCollider.direction = 2;
-                        Vector3 center = new Vector3(0, 0,(max.z + min.z) * 0.5f);
-                        capsuleCollider.center = center;
+                        //Vector3 center = new Vector3(0, 0,(max.z + min.z) * 0.5f);
+                        //capsuleCollider.center = center;
                         capsuleCollider.height = max.z - min.z;
                         capsuleCollider.radius = (size.x + size.y) * 0.25f;
                     }
+                    capsuleCollider.center = Vector3.Lerp(min, max, 0.5f);  //使用包围盒中心作为胶囊体中心
                 }
             }
         }
